@@ -8,7 +8,10 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from models import Todos
 
-router = APIRouter()
+router = APIRouter(
+    tags=["todos"],
+)
+
 
 def get_db():
     db = SessionLocal()
@@ -18,7 +21,9 @@ def get_db():
     finally:
         db.close()
 
+
 db_dependency = Annotated[Session, Depends(get_db)]
+
 
 class TodoRequest(BaseModel):
     title: str = Field(min_length=3)
@@ -26,9 +31,11 @@ class TodoRequest(BaseModel):
     priority: int = Field(gt=0, lt=6)
     complete: bool
 
+
 @router.get("/", status_code=status.HTTP_200_OK)
 def read_all(db: db_dependency):
     return db.query(Todos).all()
+
 
 @router.get("/todo/{todo_id}", status_code=status.HTTP_200_OK)
 def read_todo(db: db_dependency, todo_id: int = Path(gt=0)):
@@ -39,6 +46,7 @@ def read_todo(db: db_dependency, todo_id: int = Path(gt=0)):
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
 
+
 @router.post("/todo", status_code=status.HTTP_201_CREATED)
 def create_todo(db: db_dependency, todo_request: TodoRequest):
     todo_model = Todos(**todo_request.model_dump())
@@ -46,8 +54,9 @@ def create_todo(db: db_dependency, todo_request: TodoRequest):
     db.add(todo_model)
     db.commit()
 
+
 @router.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_todo(db: db_dependency,  todo_request: TodoRequest, todo_id: int = Path(gt=0)):
+def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int = Path(gt=0)):
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
 
     if todo_model is None:
@@ -60,6 +69,7 @@ def update_todo(db: db_dependency,  todo_request: TodoRequest, todo_id: int = Pa
 
     db.add(todo_model)
     db.commit()
+
 
 @router.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
