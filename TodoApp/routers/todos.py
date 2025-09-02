@@ -9,9 +9,7 @@ from sqlalchemy.orm import Session
 from models import Todos
 from .auth import get_current_user
 
-router = APIRouter(
-    tags=["todos"],
-)
+router = APIRouter()
 
 
 def get_db():
@@ -35,13 +33,19 @@ class TodoRequest(BaseModel):
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def read_all(db: db_dependency):
-    return db.query(Todos).all()
+def read_all(user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed")
+
+    return db.query(Todos).filter(Todos.user_id==user.get("id")).all()
 
 
 @router.get("/todo/{todo_id}", status_code=status.HTTP_200_OK)
-def read_todo(db: db_dependency, todo_id: int = Path(gt=0)):
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+def read_todo(user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed")
+
+    todo_model = (db.query(Todos).filter(Todos.id == todo_id).filter(Todos.user_id==user.get("id")).first())
 
     if todo_model is not None:
         return todo_model
@@ -61,8 +65,11 @@ def create_todo(user: user_dependency, db: db_dependency, todo_request: TodoRequ
 
 
 @router.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int = Path(gt=0)):
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+def update_todo(user: user_dependency, db: db_dependency, todo_request: TodoRequest, todo_id: int = Path(gt=0)):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed")
+
+    todo_model = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.user_id==user.get("id")).first()
 
     if todo_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Todo not found')
@@ -77,8 +84,11 @@ def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int = Pat
 
 
 @router.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+def delete_todo(user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed")
+
+    todo_model = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.user_id==user.get("id")).first()
 
     if todo_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Todo not found')
