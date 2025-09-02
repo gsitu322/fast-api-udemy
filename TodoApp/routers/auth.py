@@ -1,4 +1,4 @@
-from email.header import Header
+from datetime import timedelta, datetime, timezone
 from typing import Annotated
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -8,8 +8,13 @@ from models import Users
 from passlib.context import CryptContext
 from starlette import status
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import jwt
 
 router = APIRouter()
+
+# Move this elsewhere when learning how to use config files
+SECRET_KEY  = "b17d00bcef95fd5b10a0d6c81bf418ebd6d6a138d1be4f9da210d9acc40c00d3"
+ALGORITHM   = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -22,6 +27,9 @@ class CreateUserRequest(BaseModel):
     password: str
     role: str
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 def get_db():
     db = SessionLocal()
@@ -41,8 +49,13 @@ def authenticate_user(username: str, password: str, db):
     if not bcrypt_context.verify(password, user.hashed_password):
         return False
 
-    return True
+    return user
 
+def create_access_token(username: str, user_id: int, expires_delta: timedelta):
+    encode = {"sub": username, "id": user_id}
+    expires = datetime.now(timezone.utc) + expires_delta
+    encode.update({"exp": expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
@@ -63,7 +76,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     db.commit()
 
 
-@router.post("/token", status_code=status.HTTP_200_OK)
+@router.post("/token", response_model=Token, status_code=status.HTTP_200_OK)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user = authenticate_user(
         form_data.username,
@@ -74,6 +87,9 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     if not user:
         return "Authorization failed"
 
-    return "Successfully logged in"
+    token = create_access_token(user.username, user.id, expires_delta=timedelta(days=1))
 
-    return form_data.username
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
