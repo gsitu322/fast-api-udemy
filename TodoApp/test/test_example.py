@@ -1,3 +1,7 @@
+import pytest
+from sqlalchemy.testing.pickleable import User
+
+
 def test_equal_or_not_equal():
     assert 3 == 3
     assert 3 != 1
@@ -12,3 +16,19 @@ def test_boolean():
     assert True == True
     assert False == False
     assert True == True
+
+
+class Student():
+    def __init__(self, first_name: str, last_name: str, major: str, years: int):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.major = major
+        self.years = years
+
+def test_person_initialization():
+    p = Student("John", "Doe", "Computer Science", 1)
+
+    assert p.first_name == "John"
+    assert p.last_name == "Doe"
+    assert p.major == "Computer Science"
+    assert p.years == 1
