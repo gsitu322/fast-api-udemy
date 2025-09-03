@@ -25,10 +25,14 @@ class Student():
         self.major = major
         self.years = years
 
-def test_person_initialization():
-    p = Student("John", "Doe", "Computer Science", 1)
 
-    assert p.first_name == "John"
-    assert p.last_name == "Doe"
-    assert p.major == "Computer Science"
-    assert p.years == 1
+@pytest.fixture
+def default_employee():
+    return Student("John", "Doe", "Computer Science", 1)
+
+
+def test_person_initialization(default_employee):
+    assert default_employee.first_name == "John"
+    assert default_employee.last_name == "Doe"
+    assert default_employee.major == "Computer Science"
+    assert default_employee.years == 1
