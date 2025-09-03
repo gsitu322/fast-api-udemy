@@ -27,7 +27,7 @@ def override_get_db():
         db.close()
 
 def override_get_current_user():
-    return {"username": "gsitu322", "id": 1, "role": "admin"}
+    return {"username": "gsitu322", "id": 1, "user_role": "admin"}
 
 
 client = TestClient(app)
