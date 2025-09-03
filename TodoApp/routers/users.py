@@ -11,8 +11,8 @@ from ..models import Users
 from .auth import get_current_user
 
 router = APIRouter(
-    prefix="/users",
-    tags=["users"]
+    prefix="/user",
+    tags=["user"]
 )
 
 
