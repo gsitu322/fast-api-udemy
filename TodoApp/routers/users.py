@@ -3,11 +3,11 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 from starlette import status
 
-from database import SessionLocal
+from ..database import SessionLocal
 
 from typing import Annotated
 from sqlalchemy.orm import Session
-from models import Users
+from ..models import Users
 from .auth import get_current_user
 
 router = APIRouter(
