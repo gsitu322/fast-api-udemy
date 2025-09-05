@@ -39,3 +39,6 @@ Thumbs.db
 # Jupyter (if you use it with FastAPI)
 .ipynb_checkpoints
 
+# databases
+testdb.db
+todosapp.db
