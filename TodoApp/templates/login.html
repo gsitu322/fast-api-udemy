@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Todo App</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/base.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/bootstrap.css') }}"/>
-</head>
-<body>
+{% include "layout.html" %}
+
 <div class="container">
     <div class="card">
         <div class="card-header">Login</div>
@@ -31,5 +24,3 @@
         </div>
     </div>
 </div>
-</body>
-</html>
