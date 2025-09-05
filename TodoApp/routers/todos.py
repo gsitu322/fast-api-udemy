@@ -98,3 +98,4 @@ def delete_todo(user: user_dependency, db: db_dependency, todo_id: int = Path(gt
 
     db.delete(todo_model)
     db.commit()
+
